@@ -7,18 +7,18 @@ import tkinter as tk
 
 #declare global variables
 openai.organization = "org-VQ8Slx5WR2WUeXOCdbA68dqR" #Ennead org
-#openai.organization = "org-v81QOxH3BjkSJxbYQouRiDc4" #personal org
 openai.api_key = os.getenv("OPENAI_API_KEY_ENNEAD")
 user = os.getlogin()
 MODEL = "gpt-3.5-turbo-16k"
 TEMP = 0
-PROFILE = "profile_facts.txt"
+PROFILE = "profile_wordy.txt"
 with open(PROFILE, 'r') as file:
     profile = file.read()
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    print("\n\nSystem prompt: BLENDED")
+    print(f'Hi, {name}! \nYou are chatting with GPT-3.5 using a system prompt designed for Ennead Architects. \nThe prompt attempts to strike a balance between listing facts about Ennead and demonstrating a writing style.')  # Press Ctrl+F8 to toggle the breakpoint.
 
 def completion(_model, _prompt, _max_tokens, _temperature):
     return openai.Completion.create(
