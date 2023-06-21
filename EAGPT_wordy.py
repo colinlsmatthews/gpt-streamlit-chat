@@ -17,7 +17,8 @@ with open(PROFILE, 'r') as file:
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    print("\n\nSystem prompt: WORDY")
+    print(f'Hi, {name}! \nYou are chatting with GPT-3.5 using a system prompt designed for Ennead Architects. \nThe prompt is verbose and is written in the style of typical marketing copy for the firm.')  # Press Ctrl+F8 to toggle the breakpoint.
 
 def completion(_model, _prompt, _max_tokens, _temperature):
     return openai.Completion.create(
