@@ -5,9 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="83d59186-81a7-4e92-8d97-5fce90308f7d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/EAGPT.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profiles/default.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profiles/default_description.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profiles/wordy.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/profiles/wordy_description.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EAGPT_facts.py" beforeDir="false" afterPath="$PROJECT_DIR$/EAGPT_facts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/profile.txt" beforeDir="false" afterPath="$PROJECT_DIR$/profile.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_area.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,10 +42,16 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Github/openAI-testing-cm",
-    "settings.editor.selected.configurable": "settings.sync"
+    "last_opened_file_path": "C:/Github/openAI-testing-cm/profiles",
+    "settings.editor.selected.configurable": "preferences.sourceCode.YAML"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Github\openAI-testing-cm\profiles" />
+      <recent name="C:\Github\openAI-testing-cm" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="openAI-testing-cm" />
