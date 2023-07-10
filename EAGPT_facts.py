@@ -7,7 +7,12 @@ import tkinter as tk
 
 #declare global variables
 openai.organization = "org-VQ8Slx5WR2WUeXOCdbA68dqR" #Ennead org
-openai.api_key = os.getenv("OPENAI_API_KEY_ENNEAD")
+
+if os.getenv("OPENAI_API_KEY_ENNEAD"):
+    openai.api_key = os.getenv("OPENAI_API_KEY_ENNEAD")
+else:
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+
 user = os.getlogin()
 MODEL = "gpt-3.5-turbo-16k"
 TEMP = 0
