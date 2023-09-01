@@ -66,32 +66,31 @@ def get_model_list(sort_choice):
         return gpt_models
 
 
-def get_model():
+def get_model(choice_prompt = True):
     global MODEL
-    model_choice = input(f"\nThe current model is \"{MODEL}\". Would you like to change? (Y/N)\n").upper()
+    if choice_prompt:
+        model_choice = input(f"\nThe current model is \"{MODEL}\". Would you like to change? (Y/N)\n").upper()
+    else:
+        model_choice = "Y"
+    
     if model_choice == "Y":
-        display_models = input("\nWould you like to see a list of available chat models? (Y/N)\n").upper()
-        if display_models == "Y":
             for model in get_model_list(True):
                 print(model)
             new_model = input("\nInput new model name. Type \"cancel\" to keep default.\n").lower()
-            if new_model != "cancel":
+            if new_model != "cancel" and new_model in get_model_list(False):
                 MODEL = new_model
                 print(f"\nThe model has been changed to \"{new_model}\"")
             elif new_model == "cancel":
                 pass
-        elif display_models == "N":
-            new_model = input("\nInput new model name. Type \"cancel\" to keep default.\n").lower()
-            if new_model != "cancel":
-                MODEL = new_model
-                print(f"\nThe model has been changed to \"{new_model}\"")
-            elif new_model == "cancel":
-                pass
-        else:
-            print("\nInvalid input. Please reenter.")
-            get_model()
+            else:
+                print("\nInvalid input. Please reenter.")
+                get_model(choice_prompt=False)
+        
     elif model_choice == "N":
         pass
+    else:
+        print("\nInvalid input. Please reenter.")
+        get_model(choice_prompt=False)
 
 def get_temp():
     global TEMP
@@ -132,6 +131,16 @@ def get_profile_description(filename):
         with open(filepath, "r") as file:
             contents = file.read()
             print("\n" + contents)
+    else:
+        pass
+
+def get_profile_text(filename):
+    filepath = ".\profiles\\" + filename + ".txt"
+    files = glob.glob(os.path.join(".\profiles\\", "*.txt"))
+    if filepath in files:
+        with open(filepath, "r") as file:
+            contents = file.read()
+            return contents
     else:
         pass
 
