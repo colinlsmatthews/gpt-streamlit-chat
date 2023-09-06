@@ -1,15 +1,39 @@
 import sys
-from PyQt5 import QtWidgets
+from PyQt6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+    QHBoxLayout
+)
 
-app = QtWidgets.QApplication(sys.argv)
-windows = QtWidgets.QWidget()
+class MainWindow(QWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-windows.resize(500, 500)
-windows.move(100, 100)
+        self.setWindowTitle('EAGPT')
+        
+        layout_1 = QHBoxLayout()
+        self.setLayout(layout_1)
+        
+        titles_1 = ['Yes', 'No', 'Cancel']
+        buttons_1 = [QPushButton(title) for title in titles_1]
+        for button in buttons_1:
+            layout_1.addWidget(button)
+            
+        layout_1.setStretchFactor(buttons_1[1], 2)
+        layout_1.setStretchFactor(buttons_1[2], 1)
+        layout_1.setStretchFactor(buttons_1[0], 2)
+        
+        
+        # show the window
+        self.show() 
 
-windows.setWindowTitle("Hello PyQt5")
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
 
-# set icon
-windows.setWindowIcon(QtWidgets.QIcon("resources\icon.png"))
-windows.show()
-sys.exit(app.exec_())
+    window = MainWindow()
+
+    sys.exit(app.exec())
