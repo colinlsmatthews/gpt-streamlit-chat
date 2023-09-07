@@ -77,7 +77,7 @@ def get_model(choice_prompt = True):
             for model in get_model_list(True):
                 print(model)
             new_model = input("\nInput new model name. Type \"cancel\" to keep default.\n").lower()
-            if new_model != "cancel" and new_model in get_model_list(False):
+            if new_model != "cancel" andy new_model in get_model_list(False):
                 MODEL = new_model
                 print(f"\nThe model has been changed to \"{new_model}\"")
             elif new_model == "cancel":
