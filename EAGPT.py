@@ -6,9 +6,7 @@ import time
 import EAGPT_lib as eagpt
 
 
-st.sidebar.markdown("# EAGPT 🎈")
-
-st.sidebar.markdown("## Settings")
+st.sidebar.markdown("# Settings")
 
 # Get API key
 api_toggle = st.sidebar.toggle(
@@ -76,11 +74,12 @@ if model_auth:
     profile = st.sidebar.selectbox(
         "Profile Selection",
         eagpt.get_profile_list(),
+        index = eagpt.get_profile_list().index("default"),
         help="Please select a profile from the dropdown menu."
     )
     
     st.sidebar.markdown("### Profile Description:")
-    st.sidebar.markdown(eagpt.get_profile_description(profile))
+    st.sidebar.markdown(f"*{eagpt.get_profile_description(profile)}*")
     
 else:
     pass
@@ -103,8 +102,9 @@ if "messages" not in st.session_state:
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    if not message["role"] == "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
 # Accept user input
 if prompt := st.chat_input("Is there life on Mars?"):
