@@ -5,7 +5,8 @@ import random
 import time
 import EAGPT_lib as eagpt
 
-
+st.title("EAGPT")
+st.divider()
 st.sidebar.markdown("# Settings")
 
 # Get API key
@@ -26,18 +27,13 @@ api_key_input = st.sidebar.text_input(
 if not api_toggle:
     api_key_input = st.secrets["OPENAI_API_KEY"]
 
-
-
 # Set API key
-# openai.api_key = api_key_input
-# eagpt.get_model_list(True)
 
 try:
     openai.api_key = api_key_input
     eagpt.get_model_list(True)
     st.sidebar.markdown("*OpenAI API key successfully set!*")
     model_auth = True
-    model_auth
 except Exception as e:
     model_auth = False
     if "Invalid authorization header" in str(e):
@@ -49,7 +45,7 @@ except Exception as e:
 
 if model_auth:
     # Set temperature
-    temp = st.sidebar.slider(
+    st.session_state["openai_temp"] = st.sidebar.slider(
         "Temperature",
         min_value=0.0,
         max_value=2.0,
@@ -64,7 +60,7 @@ if model_auth:
     )
 
     # Get model selection
-    model = st.sidebar.selectbox(
+    st.session_state["openai_model"] = st.sidebar.selectbox(
         "Model Selection",
         eagpt.get_model_list(True),
         help="Please select a model from the dropdown menu."
@@ -81,48 +77,59 @@ if model_auth:
     st.sidebar.markdown("### Profile Description:")
     st.sidebar.markdown(f"*{eagpt.get_profile_description(profile)}*")
     
+    start_chat = st.sidebar.button(
+        "Start new chat",
+        type="primary",
+        use_container_width=True
+    )
+
+    # Set a default model
+    if "openai_model" not in st.session_state:
+        st.session_state["openai_model"] = "gpt-3.5-turbo"
+
+    # Initialize chat history
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [
+            {"role": "system", "content": f"{eagpt.get_profile_text(profile)}"}
+        ]
+    if start_chat:
+        st.session_state["messages"] = [
+            {"role": "system", "content": f"{eagpt.get_profile_text(profile)}"}
+        ]
+    
+
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        if not message["role"] == "system":
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+    # Accept user input
+    if prompt := st.chat_input("Is there life on Mars?"):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            full_response = ""
+            for response in openai.ChatCompletion.create(
+                model=st.session_state["openai_model"],
+                temperature=st.session_state["openai_temp"],
+                messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+                stream=True,
+            ):
+                full_response += response.choices[0].delta.get("content", "")
+                message_placeholder.markdown(full_response + "▌")
+            message_placeholder.markdown(full_response)
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
 else:
     pass
 
-st.title("EAGPT")
-st.divider()
 
-# Set OpenAI API key from Streamlit secrets
-openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# Set a default model
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [
-        {"role": "system", "content": "You are a helpful assistant."}
-    ]
 
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    if not message["role"] == "system":
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
 
-# Accept user input
-if prompt := st.chat_input("Is there life on Mars?"):
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    # Display user message in chat message container
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    # Display assistant response in chat message container
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        full_response = ""
-        for response in openai.ChatCompletion.create(
-            model=st.session_state["openai_model"],
-            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-            stream=True,
-        ):
-            full_response += response.choices[0].delta.get("content", "")
-            message_placeholder.markdown(full_response + "▌")
-        message_placeholder.markdown(full_response)
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
