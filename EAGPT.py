@@ -1,16 +1,105 @@
 import streamlit as st
+import openai
 import numpy as np
 import random
 import time
+import EAGPT_lib as eagpt
 
-st.markdown("# Main page 🎈")
-st.sidebar.markdown("# Main page 🎈")
+
+st.sidebar.markdown("# EAGPT 🎈")
+
+st.sidebar.markdown("## Settings")
+
+# Get API key
+api_toggle = st.sidebar.toggle(
+    "Manual API key input",
+    value=False,
+    help="Use manual API key input to override the API key stored in Streamlit secrets."
+)
+
+api_key_input = st.sidebar.text_input(
+    "OpenAI API Key", 
+    type="default",
+    help = "You can find your API key at https://platform.openai.com/account",
+    placeholder="sk-...",
+    disabled = not api_toggle
+)
+
+if not api_toggle:
+    api_key_input = st.secrets["OPENAI_API_KEY"]
+
+
+
+# Set API key
+# openai.api_key = api_key_input
+# eagpt.get_model_list(True)
+
+try:
+    openai.api_key = api_key_input
+    eagpt.get_model_list(True)
+    st.sidebar.markdown("*OpenAI API key successfully set!*")
+    model_auth = True
+    model_auth
+except Exception as e:
+    model_auth = False
+    if "Invalid authorization header" in str(e):
+        st.sidebar.markdown("*Authentication failed: no key provided*")
+    elif "Incorrect API key provided" in str(e):
+        st.sidebar.markdown("*Authentication failed: invalid key*")
+    else:
+        st.sidebar.markdown(f"*Authentication failed: {e}*")
+
+if model_auth:
+    # Set temperature
+    temp = st.sidebar.slider(
+        "Temperature",
+        min_value=0.0,
+        max_value=2.0,
+        value=0.5,
+        step=0.1,
+        format="%.1f",
+        help="Please enter new temperature between 0 and 2. "
+            "Lower values for temperature result in more consistent outputs, "
+            "while higher values generate more diverse and creative results. "
+            "Select a temperature value based on the desired trade-off between "
+            "coherence and creativity for your specific application."
+    )
+
+    # Get model selection
+    model = st.sidebar.selectbox(
+        "Model Selection",
+        eagpt.get_model_list(True),
+        help="Please select a model from the dropdown menu."
+    )
+    
+    # Set profile
+    profile = st.sidebar.selectbox(
+        "Profile Selection",
+        eagpt.get_profile_list(),
+        help="Please select a profile from the dropdown menu."
+    )
+    
+    st.sidebar.markdown("### Profile Description:")
+    st.sidebar.markdown(eagpt.get_profile_description(profile))
+    
+else:
+    pass
 
 st.title("EAGPT")
+st.divider()
+
+# Set OpenAI API key from Streamlit secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+
+# Set a default model
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state["messages"] = [
+        {"role": "system", "content": "You are a helpful assistant."}
+    ]
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -18,32 +107,22 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # Accept user input
-if prompt := st.chat_input("What is up?"):
+if prompt := st.chat_input("Is there life on Mars?"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
     # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(prompt)
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-
-with st.chat_message("assistant"):
-    message_placeholder = st.empty()
-    full_response = ""
-    assistant_response = random.choice(
-        [
-            "I'm doing great, thanks for asking!",
-            "I'm doing well, thanks for asking!",
-            "I'm doing okay, thanks for asking!",
-            "I'm doing poorly, thanks for asking!",
-            "I'm doing terribly, thanks for asking!",
-        ]
-    )
-    # Simulate stream of respose with milliseconds of delay
-    for chunk in assistant_response.split():
-        full_response += chunk + " "
-        time.sleep(0.05)
-        # Add a blinking cursor to simulate typing
-        message_placeholder.markdown(full_response + "▌")
-    message_placeholder.markdown(full_response)
-# Add assistant response to chat history
-st.session_state.messages.append({"role": "assistant", "content": full_response})
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
+        for response in openai.ChatCompletion.create(
+            model=st.session_state["openai_model"],
+            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+            stream=True,
+        ):
+            full_response += response.choices[0].delta.get("content", "")
+            message_placeholder.markdown(full_response + "▌")
+        message_placeholder.markdown(full_response)
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
