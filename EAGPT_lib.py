@@ -2,6 +2,7 @@ import os
 import openai
 import tiktoken
 import glob
+import sqlite3
 import streamlit as st
 
 # if "api_key" in st.session_state:
@@ -9,6 +10,7 @@ import streamlit as st
 
 # *************************************************************
 # Setup functions
+
 
 def get_model_list(sort_choice):
     model_id_list = []
@@ -26,46 +28,82 @@ def get_model_list(sort_choice):
     elif sort_choice == False:
         return gpt_models
 
+
 # *************************************************************
 # Profile functions
 
+
+PROFILE_DIR = "profiles\\"
+
+
+def get_profile_files(extension=".txt"):
+    return glob.glob(os.path.join(PROFILE_DIR, f"*{extension}"))
+
+
+def get_filtered_profile_list():
+    profile_files = [f for f in get_profile_files(
+    ) if not f.endswith("_description.txt")]
+    return [os.path.basename(f)[:-4] for f in profile_files]
+
+
+def read_file(filepath):
+    if os.path.exists(filepath):
+        with open(filepath, "r") as file:
+            return file.read()
+
+
+def get_profile_content_from_file(filename, description=False):
+    suffix = "_description" if description else ""
+    filepath = os.path.join(PROFILE_DIR, f"{filename}{suffix}.txt")
+    return read_file(filepath)
+
+
+def add_profile(name, content, description):
+    conn = sqlite3.connect('profiles.db')
+    conn.execute("INSERT INTO profiles (name, content, description) VALUES (?, ?, ?)",
+                 (name, content, description))
+    conn.commit()
+    conn.close()
+
+
+def initialize_db():
+    conn = sqlite3.connect('profiles.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS profiles
+                 (name TEXT PRIMARY KEY, content TEXT, description TEXT)''')
+    conn.commit()
+    conn.close()
+
+
 def get_profile_list():
-    profile_files = []
-    files = glob.glob(os.path.join(".\profiles\\", "*.txt"))
-    for file in files:
-        if file[-15::] == "description.txt":
-            pass
-        else:
-            profile_files.append(file)
-    items = []
-    for file in profile_files:
-        filename = file.split("\\")[-1]
-        items.append(filename[0:-4])
-    result = [item for item in items if item is not None]
-    return result
+    conn = sqlite3.connect('profiles.db')
+    c = conn.cursor()
+    c.execute('SELECT name FROM profiles')
+    profile_names = [row[0] for row in c.fetchall()]
+    conn.close()
+    return profile_names
 
-def get_profile_description(filename):
-    filepath = ".\profiles\\" + filename + "_description.txt"
-    files = glob.glob(os.path.join(".\profiles\\", "*.txt"))
-    if filepath in files:
-        with open(filepath, "r") as file:
-            contents = file.read()
-            return contents
-    else:
-        pass
 
-def get_profile_text(filename):
-    filepath = ".\profiles\\" + filename + ".txt"
-    files = glob.glob(os.path.join(".\profiles\\", "*.txt"))
-    if filepath in files:
-        with open(filepath, "r") as file:
-            contents = file.read()
-            return contents
-    else:
-        pass
+def get_profile_content(name):
+    conn = sqlite3.connect('profiles.db')
+    c = conn.cursor()
+    c.execute("SELECT content FROM profiles WHERE name=?", (name,))
+    row = c.fetchone()
+    conn.close()
+    return row[0] if row else None
+
+
+def get_profile_description(name):
+    conn = sqlite3.connect('profiles.db')
+    c = conn.cursor()
+    c.execute("SELECT description FROM profiles WHERE name=?", (name,))
+    row = c.fetchone()
+    conn.close()
+    return row[0] if row else None
 
 # *************************************************************
 # Chat functions
+
 
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     """Returns the number of tokens used by a list of messages."""
@@ -78,16 +116,19 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
         print("Warning: gpt-3.5-turbo may change over time. Returning num tokens assuming gpt-3.5-turbo-0301.")
         return num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301")
     elif model == "gpt-4":
-        print("Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
+        print(
+            "Warning: gpt-4 may change over time. Returning num tokens assuming gpt-4-0314.")
         return num_tokens_from_messages(messages, model="gpt-4-0314")
     elif model == "gpt-3.5-turbo-0301":
-        tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
+        # every message follows <|start|>{role/name}\n{content}<|end|>\n
+        tokens_per_message = 4
         tokens_per_name = -1  # if there's a name, the role is omitted
     elif model == "gpt-4-0314":
         tokens_per_message = 3
         tokens_per_name = 1
     else:
-        raise NotImplementedError(f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
+        raise NotImplementedError(
+            f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens.""")
     num_tokens = 0
     for message in messages:
         num_tokens += tokens_per_message
@@ -99,8 +140,6 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0301"):
     return num_tokens
 
 
-
 # *************************************************************
-
 if __name__ == "__main__":
     pass

@@ -68,15 +68,21 @@ if model_auth:
     )
 
     # Set profile
+
+    profile_list = eagpt.get_filtered_profile_list()
+    default_index = profile_list.index(
+        "default") if "default" in profile_list else 0
+
     profile = st.sidebar.selectbox(
         "Profile Selection",
-        eagpt.get_profile_list(),
-        index=eagpt.get_profile_list().index("default"),
+        profile_list,
+        index=default_index,
         help="Please select a profile from the dropdown menu."
     )
 
     st.sidebar.markdown("### Profile Description:")
-    st.sidebar.markdown(f"*{eagpt.get_profile_description(profile)}*")
+    st.sidebar.markdown(
+        f"*{eagpt.get_profile_content_from_file(profile, description=True)}*")
 
     start_chat = st.sidebar.button(
         "Start new chat",
@@ -89,13 +95,10 @@ if model_auth:
         st.session_state["openai_model"] = "gpt-3.5-turbo"
 
     # Initialize chat history
-    if "messages" not in st.session_state:
+    if "messages" not in st.session_state or start_chat:
         st.session_state["messages"] = [
-            {"role": "system", "content": f"{eagpt.get_profile_text(profile)}"}
-        ]
-    if start_chat:
-        st.session_state["messages"] = [
-            {"role": "system", "content": f"{eagpt.get_profile_text(profile)}"}
+            {"role": "system",
+                "content": f"{eagpt.get_profile_content_from_file(profile, description=False)}"}
         ]
 
     # Display chat messages from history on app rerun
