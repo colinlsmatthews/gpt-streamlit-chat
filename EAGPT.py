@@ -132,7 +132,6 @@ if model_auth:
                 error_message = str(e)
                 match = re.search(
                     r"This model's maximum context length is (\d+) tokens\. However, your messages resulted in (\d+) tokens\. Please reduce the length of the messages\.", error_message)
-
                 if match:
                     # Group 0 is the entire match
                     formatted_message = match.group(0)
