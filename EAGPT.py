@@ -48,134 +48,191 @@ api_key_input = st.sidebar.text_input(
 if not api_toggle:
     api_key_input = st.secrets["OPENAI_API_KEY"]
 
+
 # Set API key
 
-try:
-    openai.api_key = api_key_input
-    eagpt.get_model_list(True)
-    with st.spinner("Checking API key..."):
-        time.sleep(spinner_delay)
-    st.sidebar.markdown("*OpenAI API key successfully set!*")
-    st.success("OpenAI API key successfully set!", icon=success_icon)
-    model_auth = True
-except Exception as e:
-    model_auth = False
-    if "Invalid authorization header" in str(e):
-        with st.spinner("Checking API key..."):
-            time.sleep(spinner_delay)
-        st.sidebar.markdown("*Authentication failed: no key provided*")
-        st.error("Authentication failed: no key provided", icon=error_icon)
-    elif "Incorrect API key provided" in str(e):
-        with st.spinner("Checking API key..."):
-            time.sleep(spinner_delay)
-        st.sidebar.markdown("*Authentication failed: invalid key*")
-        st.error("Authentication failed: invalid key", icon=error_icon)
+@st.cache_data(max_entries=1)
+def authenticate_api_key(api_key):
+    try:
+        openai.api_key = api_key
+        eagpt.get_model_list(True)
+        st.sidebar.markdown("*OpenAI API key successfully set!*")
+        st.success("OpenAI API key successfully set!", icon=success_icon)
+        return True
+    except Exception as e:
+        if "Invalid authorization header" in str(e):
+            st.sidebar.markdown("*Authentication failed: no key provided*")
+            st.error("Authentication failed: no key provided", icon=error_icon)
+        elif "Incorrect API key provided" in str(e):
+            st.sidebar.markdown("*Authentication failed: invalid key*")
+            st.error("Authentication failed: invalid key", icon=error_icon)
+        else:
+            st.sidebar.markdown(f"*Authentication failed: {e}*")
+            st.error(f"Authentication failed: {e}", icon=error_icon)
+        return False
+
+
+auth_success = authenticate_api_key(api_key_input)
+
+
+# Advanced settings dropbown expander
+with st.sidebar.expander("Advanced Settings", expanded=False):
+    if auth_success:
+        # Set temperature
+        st.session_state["openai_temp"] = st.slider(
+            "Temperature",
+            min_value=0.0,
+            max_value=2.0,
+            value=0.5,
+            step=0.1,
+            format="%.1f",
+            help="Please enter new temperature between 0 and 2. "
+            "Lower values for temperature result in more consistent outputs, "
+            "while higher values generate more diverse and creative results. "
+            "Select a temperature value based on the desired trade-off between "
+            "coherence and creativity for your specific application."
+        )
+
+        # Set Maximum length
+        st.session_state["openai_max_tokens"] = st.slider(
+            "Maximum length",
+            min_value=0,
+            max_value=4096,
+            value=256,
+            step=1,
+            format="%d",
+            help="The maximum number of tokens to generate (shared between "
+            "prompt and response). The upper limit varies by model. One "
+            "token is roughly 4 characters for standard English text."
+        )
+
+        # Set Top P
+        st.session_state["openai_top_p"] = st.slider(
+            "Top P",
+            min_value=0.0,
+            max_value=1.0,
+            value=1.0,
+            step=0.1,
+            format="%.1f",
+            help="Controls diversity via nucleus sampling: 0.5 means half of "
+            "all likelihood-weighted options are considered."
+        )
+
+        # Set Frequency Penalty
+        st.session_state["openai_freq_penalty"] = st.slider(
+            "Frequency Penalty",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.0,
+            step=0.1,
+            format="%.1f",
+            help="How much to penalize new tokens based on their existing "
+            "frequency in the text so far. Decreases the model's likelihood "
+            "to repeat the same line verbatim."
+        )
+
+        # Set Presence Penalty
+        st.session_state["openai_presence_penalty"] = st.slider(
+            "Presence Penalty",
+            min_value=0.0,
+            max_value=1.0,
+            value=0.0,
+            step=0.1,
+            format="%.1f",
+            help="How much to penalize new tokens based on whether they appear "
+            "in the text so far. Increases the model's likelihood to talk "
+            "about new topics."
+        )
     else:
-        with st.spinner("Checking API key..."):
-            time.sleep(spinner_delay)
-        st.sidebar.markdown(f"*Authentication failed: {e}*")
-        st.error(f"Authentication failed: {e}", icon=error_icon)
+        pass
 
-if model_auth:
-    # Set temperature
-    st.session_state["openai_temp"] = st.sidebar.slider(
-        "Temperature",
-        min_value=0.0,
-        max_value=2.0,
-        value=0.5,
-        step=0.1,
-        format="%.1f",
-        help="Please enter new temperature between 0 and 2. "
-        "Lower values for temperature result in more consistent outputs, "
-        "while higher values generate more diverse and creative results. "
-        "Select a temperature value based on the desired trade-off between "
-        "coherence and creativity for your specific application."
-    )
+# Get model selection
+st.session_state["openai_model"] = st.sidebar.selectbox(
+    "Model Selection",
+    eagpt.get_model_list(True),
+    help="Please select a model from the dropdown menu."
+)
 
-    # Get model selection
-    st.session_state["openai_model"] = st.sidebar.selectbox(
-        "Model Selection",
-        eagpt.get_model_list(True),
-        help="Please select a model from the dropdown menu."
-    )
 
-    # Set profile
+# Set profile
 
-    profile_list = eagpt.get_filtered_profile_list()
-    default_index = profile_list.index(
-        "default") if "default" in profile_list else 0
+profile_list = eagpt.get_filtered_profile_list()
+default_index = profile_list.index(
+    "default") if "default" in profile_list else 0
 
-    profile = st.sidebar.selectbox(
-        "Profile Selection",
-        profile_list,
-        index=default_index,
-        help="Please select a profile from the dropdown menu."
-    )
+st.session_state["profile_choice"] = st.sidebar.selectbox(
+    "Profile Selection",
+    profile_list,
+    index=default_index,
+    help="Please select a profile from the dropdown menu."
+)
 
-    st.sidebar.markdown("### Profile Description:")
-    st.sidebar.markdown(
-        f"*{eagpt.get_profile_content_from_file(profile, description=True)}*")
+st.sidebar.markdown("### Profile Description:")
+st.sidebar.markdown(
+    f"*{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=True)}*")
 
-    start_chat = st.sidebar.button(
-        "Start new chat",
-        type="primary",
-        use_container_width=True
-    )
 
-    # Set a default model
-    if "openai_model" not in st.session_state:
-        st.session_state["openai_model"] = "gpt-3.5-turbo"
+# Start new chat
 
-    # Initialize chat history
-    if "messages" not in st.session_state or start_chat:
-        st.session_state["messages"] = [
-            {"role": "system",
-                "content": f"{eagpt.get_profile_content_from_file(profile, description=False)}"}
-        ]
+start_chat = st.sidebar.button(
+    "Start new chat",
+    type="primary",
+    use_container_width=True
+)
 
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
-        if not message["role"] == "system":
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+# Set a default model
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
-    # Accept user input
-    if prompt := st.chat_input("Is there life on Mars?"):
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        # Display assistant response in chat message container
-        with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            full_response = ""
+# Initialize chat history
+if "messages" not in st.session_state or start_chat:
+    st.session_state["messages"] = [
+        {"role": "system",
+            "content": f"{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=False)}"}
+    ]
 
-            try:
-                for response in openai.ChatCompletion.create(
-                    model=st.session_state["openai_model"],
-                    temperature=st.session_state["openai_temp"],
-                    messages=[{"role": m["role"], "content": m["content"]}
-                              for m in st.session_state.messages],
-                    stream=True,
-                ):
-                    full_response += response.choices[0].delta.get(
-                        "content", "")
-                    message_placeholder.markdown(full_response + "▌")
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    if not message["role"] == "system":
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-            except Exception as e:
-                error_message = str(e)
-                match = re.search(
-                    r"This model's maximum context length is (\d+) tokens\. However, your messages resulted in (\d+) tokens\. Please reduce the length of the messages\.", error_message)
-                if match:
-                    # Group 0 is the entire match
-                    formatted_message = match.group(0)
-                    st.error(formatted_message)
-                else:
-                    st.error(f"An unexpected error occurred: {e}")
+# Accept user input
+if prompt := st.chat_input("Is there life on Mars?"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+        full_response = ""
 
-            message_placeholder.markdown(full_response)
-        st.session_state.messages.append(
-            {"role": "assistant", "content": full_response})
-else:
-    pass
+        try:
+            for response in openai.ChatCompletion.create(
+                model=st.session_state["openai_model"],
+                temperature=st.session_state["openai_temp"],
+                max_tokens=st.session_state["openai_max_tokens"],
+                messages=[{"role": m["role"], "content": m["content"]}
+                          for m in st.session_state.messages],
+                stream=True,
+            ):
+                full_response += response.choices[0].delta.get(
+                    "content", "")
+                message_placeholder.markdown(full_response + "▌")
+
+        except Exception as e:
+            error_message = str(e)
+            match = re.search(
+                r"This model's maximum context length is (\d+) tokens\. However, your messages resulted in (\d+) tokens\. Please reduce the length of the messages\.", error_message)
+            if match:
+                # Group 0 is the entire match
+                formatted_message = match.group(0)
+                st.error(formatted_message)
+            else:
+                st.error(f"An unexpected error occurred: {e}")
+
+        message_placeholder.markdown(full_response)
+    st.session_state.messages.append(
+        {"role": "assistant", "content": full_response})
