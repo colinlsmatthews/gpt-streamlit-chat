@@ -143,33 +143,33 @@ with st.sidebar.expander("Advanced Settings", expanded=False):
             "in the text so far. Increases the model's likelihood to talk "
             "about new topics."
         )
+
     else:
         pass
 
-# Get model selection
-st.session_state["openai_model"] = st.sidebar.selectbox(
-    "Model Selection",
-    eagpt.get_model_list(True),
-    help="Please select a model from the dropdown menu."
-)
+    # Get model selection
+    st.session_state["openai_model"] = st.sidebar.selectbox(
+        "Model Selection",
+        eagpt.get_model_list(True),
+        help="Please select a model from the dropdown menu."
+    )
 
+    # Set profile
 
-# Set profile
+    profile_list = eagpt.get_filtered_profile_list()
+    default_index = profile_list.index(
+        "default") if "default" in profile_list else 0
 
-profile_list = eagpt.get_filtered_profile_list()
-default_index = profile_list.index(
-    "default") if "default" in profile_list else 0
+    st.session_state["profile_choice"] = st.sidebar.selectbox(
+        "Profile Selection",
+        profile_list,
+        index=default_index,
+        help="Please select a profile from the dropdown menu."
+    )
 
-st.session_state["profile_choice"] = st.sidebar.selectbox(
-    "Profile Selection",
-    profile_list,
-    index=default_index,
-    help="Please select a profile from the dropdown menu."
-)
-
-st.sidebar.markdown("### Profile Description:")
-st.sidebar.markdown(
-    f"*{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=True)}*")
+    st.sidebar.markdown("### Profile Description:")
+    st.sidebar.markdown(
+        f"*{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=True)}*")
 
 
 # Start new chat
@@ -197,6 +197,7 @@ for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
+
 # Accept user input
 if prompt := st.chat_input("Is there life on Mars?"):
     # Add user message to chat history
@@ -214,6 +215,10 @@ if prompt := st.chat_input("Is there life on Mars?"):
                 model=st.session_state["openai_model"],
                 temperature=st.session_state["openai_temp"],
                 max_tokens=st.session_state["openai_max_tokens"],
+                top_p=st.session_state["openai_top_p"],
+                frequency_penalty=st.session_state["openai_freq_penalty"],
+                presence_penalty=st.session_state["openai_presence_penalty"],
+                # n=2,
                 messages=[{"role": m["role"], "content": m["content"]}
                           for m in st.session_state.messages],
                 stream=True,
@@ -236,3 +241,7 @@ if prompt := st.chat_input("Is there life on Mars?"):
         message_placeholder.markdown(full_response)
     st.session_state.messages.append(
         {"role": "assistant", "content": full_response})
+
+token_count = eagpt.num_tokens_from_messages(
+    st.session_state.messages, st.session_state["openai_model"])
+st.markdown(f":grey[*Tokens used: {token_count}*]")

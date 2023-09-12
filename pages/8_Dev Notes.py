@@ -12,6 +12,8 @@ st.markdown(
         - private (saved to user's account)
     - saved chats panel
     - token count display
+    - option for multiple responses per query
+    - option to rerun last query
     - option to send current prompt to prompt manager
     
     #### Profile Manager
