@@ -6,16 +6,36 @@ import time
 import re
 import EAGPT_lib as eagpt
 
-st.title("EAGPT")
-st.divider()
+# Set app variables
+spinner_delay = .5
+success_icon = "✅"
+error_icon = "❌"
+
+# Set page config
+st.set_page_config(
+    page_title="EAGPT",
+    page_icon="◬",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": "https://www.ennead.com",
+        "Report a bug": "https://www.ennead.com",
+        "About": "# Some test text"
+    }
+)
+
+st.image(
+    "./resources/ennead/ennead_gods.png",
+    use_column_width=True,
+    caption="Atum, Shu, Tefnut, Geb, Nut, Osiris, Isis, Set, and Nepthys."
+)
+
+st.header("◬ *Consult the Ennead*", anchor="top", divider="red")
 st.sidebar.markdown("# Settings")
 
 # Get API key
-api_toggle = st.sidebar.toggle(
-    "Manual API key input",
-    value=False,
-    help="Use manual API key input to override the API key stored in Streamlit secrets."
-)
+api_toggle = st.sidebar.toggle("Manual API key input", value=False,
+                               help="Use manual API key input to override the API key stored in Streamlit secrets.")
 
 api_key_input = st.sidebar.text_input(
     "OpenAI API Key",
@@ -33,16 +53,28 @@ if not api_toggle:
 try:
     openai.api_key = api_key_input
     eagpt.get_model_list(True)
+    with st.spinner("Checking API key..."):
+        time.sleep(spinner_delay)
     st.sidebar.markdown("*OpenAI API key successfully set!*")
+    st.success("OpenAI API key successfully set!", icon=success_icon)
     model_auth = True
 except Exception as e:
     model_auth = False
     if "Invalid authorization header" in str(e):
+        with st.spinner("Checking API key..."):
+            time.sleep(spinner_delay)
         st.sidebar.markdown("*Authentication failed: no key provided*")
+        st.error("Authentication failed: no key provided", icon=error_icon)
     elif "Incorrect API key provided" in str(e):
+        with st.spinner("Checking API key..."):
+            time.sleep(spinner_delay)
         st.sidebar.markdown("*Authentication failed: invalid key*")
+        st.error("Authentication failed: invalid key", icon=error_icon)
     else:
+        with st.spinner("Checking API key..."):
+            time.sleep(spinner_delay)
         st.sidebar.markdown(f"*Authentication failed: {e}*")
+        st.error(f"Authentication failed: {e}", icon=error_icon)
 
 if model_auth:
     # Set temperature

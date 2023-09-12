@@ -1,3 +1,11 @@
+#BEGIN STREAMLIT
+
+.streamlit/secrets.toml
+
+
+# END STREAMLIT
+# .............................................................................
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -653,6 +661,3 @@ FodyWeavers.xsd
 #*****************************************************************************
 
 
-#BEGIN STREAMLIT
-
-.streamlit/secrets.toml
