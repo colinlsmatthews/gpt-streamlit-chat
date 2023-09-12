@@ -58,7 +58,7 @@ def get_profile_content_from_file(filename, description=False):
     return read_file(filepath)
 
 
-def add_profile(name, content, description):
+def add_profile_to_db(name, content, description):
     conn = sqlite3.connect('profiles.db')
     conn.execute("INSERT INTO profiles (name, content, description) VALUES (?, ?, ?)",
                  (name, content, description))
@@ -75,7 +75,7 @@ def initialize_db():
     conn.close()
 
 
-def get_profile_list():
+def get_profile_list_from_db():
     conn = sqlite3.connect('profiles.db')
     c = conn.cursor()
     c.execute('SELECT name FROM profiles')
@@ -84,7 +84,7 @@ def get_profile_list():
     return profile_names
 
 
-def get_profile_content(name):
+def get_profile_content_from_db(name):
     conn = sqlite3.connect('profiles.db')
     c = conn.cursor()
     c.execute("SELECT content FROM profiles WHERE name=?", (name,))
@@ -93,7 +93,7 @@ def get_profile_content(name):
     return row[0] if row else None
 
 
-def get_profile_description(name):
+def get_profile_description_from_db(name):
     conn = sqlite3.connect('profiles.db')
     c = conn.cursor()
     c.execute("SELECT description FROM profiles WHERE name=?", (name,))

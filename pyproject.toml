@@ -10,6 +10,8 @@ python = "^3.10"
 openai = "^0.28.0"
 streamlit = "^1.26.0"
 tiktoken = "^0.4.0"
+sqlalchemy = "^2.0.20"
+mysqlclient = "^2.2.0"
 
 
 [build-system]

@@ -147,10 +147,12 @@ with st.sidebar.expander("Advanced Settings", expanded=False):
     else:
         pass
 
+if auth_success:
     # Get model selection
     st.session_state["openai_model"] = st.sidebar.selectbox(
         "Model Selection",
         eagpt.get_model_list(True),
+        index=len(eagpt.get_model_list(True)) - 1,
         help="Please select a model from the dropdown menu."
     )
 
@@ -171,31 +173,30 @@ with st.sidebar.expander("Advanced Settings", expanded=False):
     st.sidebar.markdown(
         f"*{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=True)}*")
 
+    # Start new chat
 
-# Start new chat
+    start_chat = st.sidebar.button(
+        "Start new chat",
+        type="primary",
+        use_container_width=True
+    )
 
-start_chat = st.sidebar.button(
-    "Start new chat",
-    type="primary",
-    use_container_width=True
-)
+    # Set a default model
+    if "openai_model" not in st.session_state:
+        st.session_state["openai_model"] = "gpt-4"
 
-# Set a default model
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
+    # Initialize chat history
+    if "messages" not in st.session_state or start_chat:
+        st.session_state["messages"] = [
+            {"role": "system",
+                "content": f"{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=False)}"}
+        ]
 
-# Initialize chat history
-if "messages" not in st.session_state or start_chat:
-    st.session_state["messages"] = [
-        {"role": "system",
-            "content": f"{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=False)}"}
-    ]
-
-# Display chat messages from history on app rerun
-for message in st.session_state.messages:
-    if not message["role"] == "system":
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        if not message["role"] == "system":
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
 
 # Accept user input
@@ -244,4 +245,4 @@ if prompt := st.chat_input("Is there life on Mars?"):
 
 token_count = eagpt.num_tokens_from_messages(
     st.session_state.messages, st.session_state["openai_model"])
-st.markdown(f":grey[*Tokens used: {token_count}*]")
+st.caption(f":grey[*Tokens used: {token_count}*]")
