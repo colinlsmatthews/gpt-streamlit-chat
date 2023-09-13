@@ -76,22 +76,31 @@ def clean_text(text):
     return text
 
 
+def clear_db(db_filename="profiles.db"):
+    conn = sqlite3.connect(db_filename)
+    db_name = db_filename.split(".")[0]
+    c = conn.cursor()
+    c.execute(f"DROP TABLE IF EXISTS {db_name}")
+    conn.commit()
+    conn.close()
+
+
 def initialize_db(db_filename, schema):
+
     conn = sqlite3.connect(db_filename)
     db_name = db_filename.split(".")[0]
     c = conn.cursor()
 
     columns = ", ".join(f"{key} {value}" for key, value in schema.items())
     c.execute(f"CREATE TABLE IF NOT EXISTS {db_name} ({columns})")
-
     conn.commit()
     conn.close()
 
 
-def update_db(db="profiles.db", clear=False, schema=None):
+def update_db(db_filename="profiles.db", clear=False, schema=None):
     # Create a connection to the database
-    conn = sqlite3.connect(db)
-    db_name = ".".split(db)[0]
+    conn = sqlite3.connect(db_filename)
+    db_name = ".".split(db_filename)[0]
 
     # Create a cursor object
     c = conn.cursor()
@@ -99,11 +108,10 @@ def update_db(db="profiles.db", clear=False, schema=None):
     # *************************************************************
     if clear:
         # Drop the existing table
-        c.execute(f"DROP TABLE IF EXISTS {db}")
-        # Recreate the table
-        columns = ", ".join(f"{key} {value}" for key, value in schema.items())
-        c.execute(f"CREATE TABLE IF NOT EXISTS {db_name} ({columns})")
+        c.execute(f"DROP TABLE IF EXISTS {db_filename}")
         conn.commit()
+        # Recreate the table
+        initialize_db(db_filename, schema)
     else:
         pass
     # *************************************************************
@@ -111,9 +119,9 @@ def update_db(db="profiles.db", clear=False, schema=None):
     # Populate the table with data
     for profile in get_filtered_file_list():
         name = clean_text(str(profile))
-        description = clean_text(str(get_profile_content_from_file(
+        description = clean_text(str(get_content_from_file(
             profile, description=True)))
-        content = clean_text(str(get_profile_content_from_file(
+        content = clean_text(str(get_content_from_file(
             profile, description=False)))
         try:
             c.execute("INSERT INTO profiles (name, description, content) VALUES (?, ?, ?)",

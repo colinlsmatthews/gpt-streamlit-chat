@@ -6,7 +6,7 @@ schema = {
     "description": "TEXT"
 }
 
-eagpt.update_db(db="profiles.db", clear=True, schema=schema)
+eagpt.update_db(db_filename="profiles.db", clear=True, schema=schema)
 
 name = "Atum"
 description = "Atum is the god of creation"
