@@ -77,8 +77,8 @@ def clean_text(text):
 
 
 def initialize_db(db_filename, schema):
-    conn = sqlite3.connect(db)
-    db_name = db.split(".")[0]
+    conn = sqlite3.connect(db_filename)
+    db_name = db_filename.split(".")[0]
     c = conn.cursor()
 
     columns = ", ".join(f"{key} {value}" for key, value in schema.items())
@@ -136,15 +136,6 @@ def add_profile_to_db(name, content, description):
     conn = sqlite3.connect('profiles.db')
     conn.execute("INSERT INTO profiles (name, content, description) VALUES (?, ?, ?)",
                  (name, content, description))
-    conn.commit()
-    conn.close()
-
-
-def initialize_db():
-    conn = sqlite3.connect('profiles.db')
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS profiles
-                 (name TEXT PRIMARY KEY, content TEXT, description TEXT)''')
     conn.commit()
     conn.close()
 
