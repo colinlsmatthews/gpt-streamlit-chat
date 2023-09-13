@@ -3,42 +3,28 @@ import EAGPT_lib as eagpt
 import streamlit as st
 
 
-# # Create a connection to the database
-# conn = sqlite3.connect('profiles.db')
-
-# # Create a cursor object
-# c = conn.cursor()
-
-# # Create table
-# c.execute('''CREATE TABLE profiles
-#              (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)''')
-
-# # Insert ten rows of data
-# names = ['John', 'Sarah', 'Mike', 'Emma', 'David',
-#          'Sophia', 'Daniel', 'Olivia', 'James', 'Isabella']
-# ages = [23, 27, 30, 22, 25, 28, 31, 24, 26, 29]
-
-# for i in range(10):
-#     c.execute("INSERT INTO profiles VALUES (?, ?, ?)", (i, names[i], ages[i]))
-
-# # Save (commit) the changes
-# conn.commit()
-
-# # Close the connection
-# conn.close()
-
-# *************************************************************
-print("\n")
-
 # Create a connection to the database
 conn = sqlite3.connect('profiles.db')
 
 # Create a cursor object
 c = conn.cursor()
 
-# Create table
-c.execute('''CREATE TABLE IF NOT EXISTS profiles (name TEXT PRIMARY KEY, description TEXT, content TEXT)''')
+# *************************************************************
+# Drop the existing table
+c.execute("DROP TABLE IF EXISTS profiles")
 
+# Recreate the table with the new structure
+c.execute('''CREATE TABLE profiles
+             (id INTEGER PRIMARY KEY,
+              name TEXT, 
+              description TEXT, 
+              content TEXT)''')
+
+# commit the transaction
+conn.commit()
+# *************************************************************
+
+# Populate the table with data
 for profile in eagpt.get_filtered_profile_list():
     name = str(profile)
     description = str(eagpt.get_profile_content_from_file(
@@ -46,14 +32,34 @@ for profile in eagpt.get_filtered_profile_list():
     content = str(eagpt.get_profile_content_from_file(
         profile, description=False))
     try:
-        c.execute("INSERT INTO profiles VALUES (?, ?, ?)",
-                  (name, description, content))
+        c.execute("INSERT INTO profiles (name, description, content) VALUES (?, ?, ?)",
+                  (name.encode('utf-8'), description.encode('utf-8'), content.encode('utf-8')))
     except sqlite3.IntegrityError as e:
         print(f"IntegrityError: {e}")
         # print(f"name: {name}, description: {description}, content: {content}")
 
-# Save (commit) the changes
-conn.commit()
+# names = ["name1", "name2", "name3"]
+# descriptions = ["description1", "description2", "description3"]
+# contents = ["content1", "content2", "content3"]
 
-# Close the connection
+# # Zip the lists together
+# data_tuples = list(zip(names, descriptions, contents))
+
+# for name, description, content in data_tuples:
+#     try:
+#         c.execute("INSERT INTO profiles (name, description, content) VALUES (?, ?, ?)",
+#                   (name, description, content))
+#         # Since no error occurred, commit this transaction
+#         conn.commit()
+#     except sqlite3.IntegrityError as e:
+#         print(f"IntegrityError: {e}")
+#         print(f"name: {name}, description: {description}, content: {content}")
+
+c.execute("PRAGMA table_info(profiles)")
+columns = c.fetchall()
+for column in columns:
+    print(column)
+
+
+# Once done with all operations, close the connection
 conn.close()
