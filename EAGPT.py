@@ -6,6 +6,7 @@ import time
 import re
 import EAGPT_lib as eagpt
 
+
 # Set app variables
 spinner_delay = .5
 success_icon = "✅"
@@ -158,7 +159,7 @@ if auth_success:
 
     # Set profile
 
-    profile_list = eagpt.get_filtered_profile_list()
+    profile_list = eagpt.get_filtered_file_list()
     default_index = profile_list.index(
         "default") if "default" in profile_list else 0
 
@@ -171,7 +172,7 @@ if auth_success:
 
     st.sidebar.markdown("### Profile Description:")
     st.sidebar.markdown(
-        f"*{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=True)}*")
+        f"*{eagpt.get_content_from_file(st.session_state.profile_choice, description=True)}*")
 
     # Start new chat
 
@@ -189,7 +190,7 @@ if auth_success:
     if "messages" not in st.session_state or start_chat:
         st.session_state["messages"] = [
             {"role": "system",
-                "content": f"{eagpt.get_profile_content_from_file(st.session_state.profile_choice, description=False)}"}
+                "content": f"{eagpt.get_content_from_file(st.session_state.profile_choice, description=False)}"}
         ]
 
     # Display chat messages from history on app rerun

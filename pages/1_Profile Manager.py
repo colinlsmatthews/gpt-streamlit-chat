@@ -3,6 +3,14 @@
 import streamlit as st
 from sqlalchemy import text
 
+profile_schema = {
+    "name": "TEXT PRIMARY KEY",
+    "content": "TEXT",
+    "description": "TEXT"
+}
+
+eagpt.initialize_db(db="profiles.db", schema=profile_schema)
+
 # Create the SQL connection to pets_db as specified in your secrets file.
 conn = st.experimental_connection('pets_db', type='sql')
 
