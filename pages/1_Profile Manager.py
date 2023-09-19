@@ -2,6 +2,9 @@
 import streamlit as st
 from sqlalchemy import text
 import EAGPT_lib as eagpt
+import json
+from google.cloud import firestore
+from google.oauth2 import service_account
 
 st.title("Profile Manager")
 st.markdown(
@@ -10,6 +13,10 @@ st.markdown(
     
     '''
 )
+
+key_dict = json.loads(st.secrets["firestore"]["db-key"])
+creds = service_account.Credentials.from_service_account_info(key_dict)
+db = firestore.Client(credentials=creds, project="eagpt-streamlit")
 
 # Deprecated SQL workflow
 
