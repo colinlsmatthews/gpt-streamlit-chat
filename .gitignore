@@ -1,6 +1,9 @@
 #BEGIN STREAMLIT
 
-.streamlit/secrets.toml
+secrets.toml
+firestore-key.json
+key.toml
+
 
 
 # END STREAMLIT
