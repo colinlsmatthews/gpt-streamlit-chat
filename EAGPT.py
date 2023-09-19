@@ -163,16 +163,22 @@ if auth_success:
     default_index = profile_list.index(
         "default") if "default" in profile_list else 0
 
-    st.session_state["profile_choice"] = st.sidebar.selectbox(
+    # st.session_state["profile_choice"] = st.sidebar.selectbox(
+    #     "Profile Selection",
+    #     profile_list,
+    #     index=default_index,
+    #     help="Please select a profile from the dropdown menu."
+    # )
+    st.sidebar.selectbox(
         "Profile Selection",
-        profile_list,
-        index=default_index,
+        ["default"],
+        index=0,
         help="Please select a profile from the dropdown menu."
     )
 
     st.sidebar.markdown("### Profile Description:")
     st.sidebar.markdown(
-        f"*{eagpt.get_content_from_file(st.session_state.profile_choice, description=True)}*")
+        f"*This is the default ChatGPT profile: \"You are a helpful assistant.\"*")
 
     # Start new chat
 
@@ -190,7 +196,7 @@ if auth_success:
     if "messages" not in st.session_state or start_chat:
         st.session_state["messages"] = [
             {"role": "system",
-                "content": f"{eagpt.get_content_from_file(st.session_state.profile_choice, description=False)}"}
+                "content": "You are a helpful assistant."}
         ]
 
     # Display chat messages from history on app rerun

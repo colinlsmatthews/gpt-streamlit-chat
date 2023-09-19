@@ -1,6 +1,5 @@
 
 import streamlit as st
-from sqlalchemy import text
 import EAGPT_lib as eagpt
 import json
 from google.cloud import firestore
