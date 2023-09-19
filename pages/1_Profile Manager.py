@@ -17,6 +17,35 @@ key_dict = json.loads(st.secrets["firestore"]["db-key"])
 creds = service_account.Credentials.from_service_account_info(key_dict)
 db = firestore.Client(credentials=creds, project="eagpt-streamlit")
 
+name = st.text_input("Enter profile name")
+description = st.text_input("Enter profile description")
+content = st.text_input("Enter profile content")
+submit = st.button("Submit")
+
+if name and description and content and submit:
+    doc_ref = db.collection("profiles").document(name)
+    doc_ref.set({
+        "description": description,
+        "content": content
+    })
+
+profiles_ref = db.collection("profiles")
+for doc in profiles_ref.stream():
+    profile = doc.to_dict()
+    name = doc.id
+    description = profile["description"]
+
+    st.subheader(f"Profile: {name}")
+    st.write(f"Description: {description}")
+
+# del_name = st.text_input("Enter profile name to delete")
+# delete = st.button("Delete")
+
+# if del_name and delete:
+#     doc_ref = db.collection("profiles").document(del_name)
+#     doc_ref.delete()
+
+
 # Deprecated SQL workflow
 
 # profile_schema = {
