@@ -4,6 +4,7 @@ import EAGPT_lib as eagpt
 import json
 from google.cloud import firestore
 from google.oauth2 import service_account
+import api_firebase as fb
 
 st.title("Profile Manager")
 st.markdown(
@@ -23,11 +24,9 @@ content = st.text_input("Enter profile content")
 submit = st.button("Submit")
 
 if name and description and content and submit:
-    doc_ref = db.collection("profiles").document(name)
-    doc_ref.set({
-        "description": description,
-        "content": content
-    })
+    fb.set_db_value("profiles", name, "description", description)
+    fb.set_db_value("profiles", name, "content", content)
+
 
 profiles_ref = db.collection("profiles")
 for doc in profiles_ref.stream():

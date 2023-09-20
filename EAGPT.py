@@ -5,6 +5,7 @@ import random
 import time
 import re
 import EAGPT_lib as eagpt
+import api_firebase as fb
 
 
 # Set app variables
@@ -25,11 +26,11 @@ st.set_page_config(
     }
 )
 
-st.image(
-    "./resources/ennead/ennead_gods.png",
-    use_column_width=True,
-    caption="Atum, Shu, Tefnut, Geb, Nut, Osiris, Isis, Set, and Nepthys."
-)
+# st.image(
+#     "./resources/ennead/ennead_gods.png",
+#     use_column_width=True,
+#     caption="Atum, Shu, Tefnut, Geb, Nut, Osiris, Isis, Set, and Nepthys."
+# )
 
 st.header("◬ *Consult the Ennead*", anchor="top", divider="red")
 st.sidebar.markdown("# Settings")
@@ -159,26 +160,23 @@ if auth_success:
 
     # Set profile
 
-    profile_list = eagpt.get_filtered_file_list()
+    profile_list = fb.get_db_document_list("profiles")
     default_index = profile_list.index(
         "default") if "default" in profile_list else 0
 
-    # st.session_state["profile_choice"] = st.sidebar.selectbox(
-    #     "Profile Selection",
-    #     profile_list,
-    #     index=default_index,
-    #     help="Please select a profile from the dropdown menu."
-    # )
-    st.sidebar.selectbox(
+    st.session_state["profile_choice"] = st.sidebar.selectbox(
         "Profile Selection",
-        ["default"],
-        index=0,
+        profile_list,
+        index=default_index,
         help="Please select a profile from the dropdown menu."
     )
 
     st.sidebar.markdown("### Profile Description:")
+
+    description = fb.get_db_value(
+        "profiles", st.session_state["profile_choice"], "description")
     st.sidebar.markdown(
-        f"*This is the default ChatGPT profile: \"You are a helpful assistant.\"*")
+        f"*{description}*")
 
     # Start new chat
 
