@@ -1,5 +1,9 @@
 import openai
 import tiktoken
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy import spatial
 
 
 def get_model_list(sort=False):
