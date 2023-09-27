@@ -6,6 +6,7 @@ import time
 import re
 import EAGPT_lib as eagpt
 import api_firebase as fb
+import api_openai as oa
 
 
 # Set app variables
@@ -26,11 +27,11 @@ st.set_page_config(
     }
 )
 
-# st.image(
-#     "./resources/ennead/ennead_gods.png",
-#     use_column_width=True,
-#     caption="Atum, Shu, Tefnut, Geb, Nut, Osiris, Isis, Set, and Nepthys."
-# )
+st.image(
+    "./resources/ennead/ennead_gods.png",
+    use_column_width=True,
+    caption="Atum, Shu, Tefnut, Geb, Nut, Osiris, Isis, Set, and Nepthys."
+)
 
 st.header("◬ *Consult the Ennead*", anchor="top", divider="red")
 st.sidebar.markdown("# Settings")
@@ -57,7 +58,7 @@ if not api_toggle:
 def authenticate_api_key(api_key):
     try:
         openai.api_key = api_key
-        eagpt.get_model_list(True)
+        oa.get_model_list(True)
         st.sidebar.markdown("*OpenAI API key successfully set!*")
         st.success("OpenAI API key successfully set!", icon=success_icon)
         return True
@@ -153,8 +154,8 @@ if auth_success:
     # Get model selection
     st.session_state["openai_model"] = st.sidebar.selectbox(
         "Model Selection",
-        eagpt.get_model_list(True),
-        index=len(eagpt.get_model_list(True)) - 1,
+        oa.get_model_list(True),
+        index=len(oa.get_model_list(True)) - 1,
         help="Please select a model from the dropdown menu."
     )
 
@@ -248,6 +249,6 @@ if prompt := st.chat_input("Is there life on Mars?"):
     st.session_state.messages.append(
         {"role": "assistant", "content": full_response})
 
-token_count = eagpt.num_tokens_from_messages(
+token_count = oa.num_tokens_from_messages(
     st.session_state.messages, st.session_state["openai_model"])
 st.caption(f":grey[*Tokens used: {token_count}*]")
