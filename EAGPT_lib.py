@@ -9,10 +9,6 @@ import streamlit as st
 #     openai.api_key = st.session_state["api_key"]
 
 # *************************************************************
-# Setup functions
-
-
-# *************************************************************
 # Profile functions
 
 
