@@ -8,7 +8,7 @@ import EAGPT_lib as eagpt
 import api_firebase as fb
 import api_openai as oa
 
-
+# Test text
 # Set app variables
 spinner_delay = .5
 success_icon = "✅"
@@ -26,6 +26,7 @@ st.set_page_config(
         "About": "# Some test text"
     }
 )
+
 
 st.image(
     "./resources/ennead/ennead_gods.png",
