@@ -28,13 +28,15 @@ st.set_page_config(
 )
 
 
-st.image(
-    "./resources/ennead/ennead_gods.png",
-    use_column_width=True,
-    caption="Atum, Shu, Tefnut, Geb, Nut, Osiris, Isis, Set, and Nepthys."
-)
+# st.image(
+#     "./resources/ennead/ennead_gods.png",
+#     use_column_width=True,
+#     caption="Atum, Shu, Tefnut, Geb, Nut, Osiris, Isis, Set, and Nepthys."
+# )
 
-st.header("◬ *Consult the Ennead*", anchor="top", divider="red")
+# st.header("◬ *Consult the Ennead*", anchor="top", divider="red")
+st.header("*EAGPT*", anchor="top", divider="red")
+
 st.sidebar.markdown("# Settings")
 
 # Get API key
@@ -153,10 +155,11 @@ with st.sidebar.expander("Advanced Settings", expanded=False):
 
 if auth_success:
     # Get model selection
+    model_list = oa.get_model_list(True)
     st.session_state["openai_model"] = st.sidebar.selectbox(
         "Model Selection",
         oa.get_model_list(True),
-        index=len(oa.get_model_list(True)) - 1,
+        index=model_list.index("gpt-4"),
         help="Please select a model from the dropdown menu."
     )
 
